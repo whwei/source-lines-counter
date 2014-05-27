@@ -1,0 +1,22 @@
+{
+  "name": "source-lines-count",
+  "version": "0.0.0",
+  "description": "a source lines counter",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/whwei/source-lines.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/whwei/source-lines/issues"
+  },
+  "homepage": "https://github.com/whwei/source-lines"
+}
