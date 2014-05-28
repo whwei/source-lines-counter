@@ -1,21 +1,26 @@
 fs = require 'fs'
 
 sourceLinesCounter = (path) ->
-    ret = {fileNum: 0, lines: 0}
-    countFiles = []
+    
+    ret = {files: [], totalLines: 0}
+    
+    paths = path
+    paths = [path] if Array.isArray(path) isnt true
 
-    stats = fs.statSync path
-    if stats.isFile()
-        ret.fileNum = 1
-        ret.lines = count path
-        return ret
+    for path in paths
+        countFiles = []
+        stats = fs.statSync path
+        if stats.isFile()
+            lines = count path
+            ret.totalLines += lines
+            ret.files.push { fileName: path, lines: lines}
+            continue
 
-    walk path, countFiles
+        walk path, countFiles
 
-    for file in countFiles
-        ret.lines += file.lines
-        ret.fileNum++
-
+        for file in countFiles
+            ret.totalLines += file.lines
+            ret.files.push(file)
     ret
 
 walk = (path, resultArray) ->
@@ -23,27 +28,38 @@ walk = (path, resultArray) ->
         files = fs.readdirSync path
     catch error
         'path error' + error
-
+    
     for file in files
         fullPath = path + '/' + file
         stats = fs.statSync fullPath
         if stats.isDirectory()
             walk fullPath, resultArray
         else
-            resultArray.push { fileName: file, lines: count fullPath }
+            ext = fullPath.match /.*(\..*)$/
+            type = ext[1] if ext isnt null and ext[1] isnt null
+            if not extConfig[type]
+                continue
 
-count = (path, rules) ->
+            resultArray.push { fileName: fullPath, lines: count fullPath }
+
+count = (path) ->
     try
         content = fs.readFileSync path, {encoding: 'utf-8'}
     catch e
         'can not read :' + path + e
 
+    # check type
+    ext = path.match /.*(\..*)$/
+    type = ext[1] if ext isnt null and ext[1] isnt null
+    type = '.js' if not extConfig[type]
+
     lines = content.split '\n'
-    counter = 0    
-    wordsReg = /\w/
-    inlineCommentReg = rules?.inlineComment || /^\s*\/\//
-    blockCommentStartReg = rules?.blockCommentStart || /\s*(\S*)\s*(\/\*)\s*/
-    blockCommentEndReg = rules?.blockCommentEnd || /(\*\/)\s*(\w)*\s*$/
+    counter = 0
+    wordsReg = extConfig[type].wordsReg
+    inlineCommentReg =  extConfig[type].inlineCommentReg
+    blockCommentStartReg = extConfig[type].blockCommentStartReg
+    blockCommentEndReg = extConfig[type].blockCommentEndReg
+    
     commentStart = false;
 
     for line in lines
@@ -75,7 +91,36 @@ count = (path, rules) ->
             isCount = true
 
         counter += 1 if isCount is true
-    
+
     counter
+
+extConfig = 
+    '.js': 
+        wordsReg: /\w/
+        inlineCommentReg: /^\s*\/\//
+        blockCommentStartReg: /\s*(\S*)\s*(\/\*)\s*/
+        blockCommentEndReg: /(\*\/)\s*(\w)*\s*$/
+    '.java':
+        wordsReg: /\w/
+        inlineCommentReg: /^\s*\/\//
+        blockCommentStartReg: /\s*(\S*)\s*(\/\*)\s*/
+        blockCommentEndReg: /(\*\/)\s*(\w)*\s*$/
+    '.css':
+        wordsReg: /\w/
+        inlineCommentReg: /^\s*\/\//
+        blockCommentStartReg: /\s*(\S*)\s*(\/\*)\s*/
+        blockCommentEndReg: /(\*\/)\s*(\w)*\s*$/
+    '.coffee':
+        wordsReg: /\w/
+        inlineCommentReg: /^\s*\/\//
+        blockCommentStartReg: /\s*(\S*)\s*(\/\*)\s*/
+        blockCommentEndReg: /(\*\/)\s*(\w)*\s*$/
+    '.html':
+        wordsReg: /\w/
+        inlineCommentReg: /^\s*\/\//
+        blockCommentStartReg: /\s*(\S*)\s*(<!--)\s*/
+        blockCommentEndReg: /(-->)\s*(\w)*\s*$/
+    
+
 
 module.exports = sourceLinesCounter

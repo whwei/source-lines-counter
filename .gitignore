@@ -26,3 +26,8 @@ node_modules
 
 # lib
 lib
+
+# exclude local test
+test/localTest.coffee
+test/resource/msq-src
+test/resource/RFID-Planning
