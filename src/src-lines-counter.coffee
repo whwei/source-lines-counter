@@ -1,4 +1,5 @@
 fs = require 'fs'
+p = require 'path'
 
 sourceLinesCounter = (path) ->
     
@@ -35,8 +36,9 @@ walk = (path, resultArray) ->
         if stats.isDirectory()
             walk fullPath, resultArray
         else
-            ext = fullPath.match /.*(\..*)$/
-            type = ext[1] if ext isnt null and ext[1] isnt null
+            ext = p.extname fullPath
+            type = ext if ext isnt null
+
             if not extConfig[type]
                 continue
 
@@ -49,9 +51,9 @@ count = (path) ->
         'can not read :' + path + e
 
     # check type
-    ext = path.match /.*(\..*)$/
-    type = ext[1] if ext isnt null and ext[1] isnt null
-    type = '.js' if not extConfig[type]
+    ext = p.extname path
+    type = ext if ext isnt null
+    type = 'js' if not extConfig[type]
 
     lines = content.split '\n'
     counter = 0
@@ -95,27 +97,27 @@ count = (path) ->
     counter
 
 extConfig = 
-    '.js': 
+    'js': 
         wordsReg: /\w/
         inlineCommentReg: /^\s*\/\//
         blockCommentStartReg: /\s*(\S*)\s*(\/\*)\s*/
         blockCommentEndReg: /(\*\/)\s*(\w)*\s*$/
-    '.java':
+    'java':
         wordsReg: /\w/
         inlineCommentReg: /^\s*\/\//
         blockCommentStartReg: /\s*(\S*)\s*(\/\*)\s*/
         blockCommentEndReg: /(\*\/)\s*(\w)*\s*$/
-    '.css':
+    'css':
         wordsReg: /\w/
         inlineCommentReg: /^\s*\/\//
         blockCommentStartReg: /\s*(\S*)\s*(\/\*)\s*/
         blockCommentEndReg: /(\*\/)\s*(\w)*\s*$/
-    '.coffee':
+    'coffee':
         wordsReg: /\w/
         inlineCommentReg: /^\s*\/\//
         blockCommentStartReg: /\s*(\S*)\s*(\/\*)\s*/
         blockCommentEndReg: /(\*\/)\s*(\w)*\s*$/
-    '.html':
+    'html':
         wordsReg: /\w/
         inlineCommentReg: /^\s*\/\//
         blockCommentStartReg: /\s*(\S*)\s*(<!--)\s*/
