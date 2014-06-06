@@ -11,17 +11,20 @@ sourceLinesCounter = (path) ->
     for path in paths
         countFiles = []
         stats = fs.statSync path
+        # if it's a file
         if stats.isFile()
-            lines = count path
-            ret.totalLines += lines
-            ret.files.push { fileName: path, lines: lines}
+            f = count path, countFiles
+            ret.totalLines += f.lines
+            ret.files.push f
             continue
 
+        # it's a dir
         walk path, countFiles
 
         for file in countFiles
             ret.totalLines += file.lines
             ret.files.push(file)
+
     ret
 
 walk = (path, resultArray) ->
@@ -36,24 +39,20 @@ walk = (path, resultArray) ->
         if stats.isDirectory()
             walk fullPath, resultArray
         else
-            ext = p.extname fullPath
-            type = ext if ext isnt null
+            count fullPath, resultArray
+            
 
-            if not extConfig[type]
-                continue
-
-            resultArray.push { fileName: fullPath, lines: count fullPath }
-
-count = (path) ->
+count = (path, resultArray) ->
     try
         content = fs.readFileSync path, {encoding: 'utf-8'}
     catch e
         'can not read :' + path + e
 
-    # check type
     ext = p.extname path
-    type = ext if ext isnt null
-    type = 'js' if not extConfig[type]
+    type = ext.replace '.', '' if ext isnt null
+
+    if not extConfig[type]
+        return
 
     lines = content.split '\n'
     counter = 0
@@ -94,7 +93,9 @@ count = (path) ->
 
         counter += 1 if isCount is true
 
-    counter
+    ret = { fileName: path, lines: counter }
+    resultArray.push ret
+    ret
 
 extConfig = 
     'js': 
