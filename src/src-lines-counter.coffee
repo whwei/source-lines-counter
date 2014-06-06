@@ -1,8 +1,10 @@
 fs = require 'fs'
 p = require 'path'
 
-sourceLinesCounter = (path) ->
-    
+sourceLinesCounter = (path, cfg) ->
+    for c of cfg 
+        extConfig[c] = cfg[c]
+
     ret = {files: [], totalLines: 0}
     
     paths = path
